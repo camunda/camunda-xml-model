@@ -20,7 +20,9 @@ import org.camunda.bpm.model.xml.type.ModelElementType;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,12 +37,34 @@ public class ModelImpl implements Model {
   private final Map<Class<? extends ModelElementInstance>, ModelElementType> typesByClass = new HashMap<Class<? extends ModelElementInstance>, ModelElementType>();
   private final String modelName;
 
+  protected final Map<String, List<String>> alternativeNamesapaces = new HashMap<String, List<String>>();
+  protected final Map<String, String> actualNamespaces = new HashMap<String, String>();
+
   /**
    * Create a new {@link Model} with a model name.
    * @param modelName  the model name to identify the model
    */
   public ModelImpl(String modelName) {
     this.modelName = modelName;
+  }
+
+  public void declareAlternativeNamespace(String alternativeNs, String actualNs) {
+    List<String> list = alternativeNamesapaces.get(actualNs);
+    if(list == null) {
+      list = new ArrayList<String>();
+      alternativeNamesapaces.put(actualNs, list);
+    }
+    list.add(alternativeNs);
+  }
+
+  public List<String> getAlternativeNamespaces(String actualNs) {
+    List<String> list = alternativeNamesapaces.get(actualNs);
+    if(list == null) {
+      return Collections.emptyList();
+    }
+    else {
+      return list;
+    }
   }
 
   public Collection<ModelElementType> getTypes() {
@@ -104,4 +128,9 @@ public class ModelImpl implements Model {
     }
     return true;
   }
+
+  public String getActualNamespace(String namespaceUri) {
+    return null;
+  }
+
 }

@@ -12,6 +12,7 @@
  */
 package org.camunda.bpm.model.xml.impl.type.attribute;
 
+import org.camunda.bpm.model.xml.impl.ModelImpl;
 import org.camunda.bpm.model.xml.impl.type.reference.ReferenceImpl;
 import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 import org.camunda.bpm.model.xml.type.ModelElementType;
@@ -85,7 +86,17 @@ public abstract class AttributeImpl<T> implements Attribute<T> {
     if(namespaceUri == null) {
       value = modelElement.getAttributeValue(attributeName);
     } else {
+      ModelImpl model = (ModelImpl) owningElementType.getModel();
+      List<String> alternativeNamespaces = model.getAlternativeNamespaces(namespaceUri);
       value = modelElement.getAttributeValueNs(namespaceUri, attributeName);
+      if(value == null) {
+        for (String alternativeNs : alternativeNamespaces) {
+          value = modelElement.getAttributeValueNs(alternativeNs, attributeName);
+          if(value != null) {
+            break;
+          }
+        }
+      }
     }
 
     // default value
