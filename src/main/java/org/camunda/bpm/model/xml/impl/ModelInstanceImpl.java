@@ -129,7 +129,7 @@ public class ModelInstanceImpl implements ModelInstance {
    *
    * @return the new model instance
    */
-  public Object clone() {
-    return new ModelInstanceImpl(model, modelBuilder, document.clone());
+  public ModelInstance clone() {
+      return new ModelInstanceImpl(model, modelBuilder, document.clone());
   }
 }
