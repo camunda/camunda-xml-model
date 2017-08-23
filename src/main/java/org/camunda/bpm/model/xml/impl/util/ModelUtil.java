@@ -33,6 +33,8 @@ import java.util.*;
  */
 public final class ModelUtil {
 
+  private final static String ID_ATTRIBUTE_NAME = "id";
+
   /**
    * Returns the {@link ModelElementInstanceImpl ModelElement} for a DOM element.
    * If the model element does not yet exist, it is created and linked to the DOM.
@@ -203,15 +205,32 @@ public final class ModelUtil {
   }
 
   /**
+   * Set new identifier if the type has a String id attribute
+   *
+   * @param type the type of the model element
+   * @param modelElementInstance the model element instance to set the id
+   * @param newId new identifier
+   * @param withReferenceUpdate true to update id references in other elements, false otherwise
+   */
+  public static void setNewIdentifier(ModelElementType type, ModelElementInstance modelElementInstance,
+                                   String newId, boolean withReferenceUpdate) {
+    Attribute<?> id = type.getAttribute(ID_ATTRIBUTE_NAME);
+    if (id != null && id instanceof StringAttribute && id.isIdAttribute()) {
+      modelElementInstance.setAttributeValue(ID_ATTRIBUTE_NAME, newId, true, withReferenceUpdate);
+    }
+  }
+
+  /**
    * Set unique identifier if the type has a String id attribute
    *
    * @param type the type of the model element
    * @param modelElementInstance the model element instance to set the id
    */
   public static void setGeneratedUniqueIdentifier(ModelElementType type, ModelElementInstance modelElementInstance) {
-    Attribute<?> id = type.getAttribute("id");
+    Attribute<?> id = type.getAttribute(ID_ATTRIBUTE_NAME);
     if (id != null && id instanceof StringAttribute && id.isIdAttribute()) {
-      ((StringAttribute) id).setValue(modelElementInstance, ModelUtil.getUniqueIdentifier(type));
+      String uniqueId = ModelUtil.getUniqueIdentifier(type);
+      modelElementInstance.setAttributeValue(ID_ATTRIBUTE_NAME, uniqueId, true, false);
     }
   }
 
