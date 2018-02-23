@@ -52,6 +52,17 @@ public final class ModelUtil {
     return modelElement;
   }
 
+  public static ModelElementInstance getModelElement(DomElement domElement, ModelInstanceImpl modelInstance, ModelElementTypeImpl modelType) {
+    ModelElementInstance modelElement = domElement.getModelElementInstance();
+
+    if(modelElement == null) {
+
+      modelElement = modelType.newInstance(modelInstance, domElement);
+      domElement.setModelElementInstance(modelElement);
+    }
+    return modelElement;
+  }
+
   protected static ModelElementTypeImpl getModelElement(DomElement domElement, ModelInstanceImpl modelInstance, String namespaceUri) {
     String localName = domElement.getLocalName();
     ModelElementTypeImpl modelType = (ModelElementTypeImpl) modelInstance.getModel().getTypeForName(namespaceUri, localName);
