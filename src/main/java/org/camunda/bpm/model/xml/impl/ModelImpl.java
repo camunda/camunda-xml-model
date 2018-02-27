@@ -12,16 +12,13 @@
  */
 package org.camunda.bpm.model.xml.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.camunda.bpm.model.xml.Model;
 import org.camunda.bpm.model.xml.impl.util.ModelUtil;
 import org.camunda.bpm.model.xml.impl.util.QName;
 import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 import org.camunda.bpm.model.xml.type.ModelElementType;
+
+import java.util.*;
 
 /**
  * A model contains all defined types and the relationship between them.
@@ -32,6 +29,7 @@ import org.camunda.bpm.model.xml.type.ModelElementType;
 public class ModelImpl implements Model {
 
   private final Map<QName, ModelElementType> typesByName = new HashMap<QName, ModelElementType>();
+  private final Map<QName, Map<QName, ModelElementType>> typesByNameAndScheme = new HashMap<QName, Map<QName, ModelElementType>>();
   private final Map<Class<? extends ModelElementInstance>, ModelElementType> typesByClass = new HashMap<Class<? extends ModelElementInstance>, ModelElementType>();
   private final String modelName;
 
@@ -78,7 +76,21 @@ public class ModelImpl implements Model {
   }
 
   public Collection<ModelElementType> getTypes() {
-    return new ArrayList<ModelElementType>(typesByName.values());
+
+    List<ModelElementType> types = new ArrayList<ModelElementType>(typesByName.values());
+
+    for (Map<QName, ModelElementType> schemeTypes : typesByNameAndScheme.values()) {
+
+      for (ModelElementType elementType : schemeTypes.values()) {
+
+        if (!types.contains(elementType)) {
+
+          types.add(elementType);
+        }
+      }
+    }
+
+    return types;
   }
 
   public ModelElementType getType(Class<? extends ModelElementInstance> instanceClass) {
@@ -93,6 +105,16 @@ public class ModelImpl implements Model {
     return typesByName.get(ModelUtil.getQName(namespaceUri, typeName));
   }
 
+  public ModelElementType getTypeForNameAndSchemaType(String namespaceUri, String typeName,
+                                                      String schemaNamespaceUri, String schemaTypeName) {
+
+    QName qName = ModelUtil.getQName(namespaceUri, typeName);
+
+    Map<QName, ModelElementType> nameTypes = typesByNameAndScheme.get(qName);
+
+    return nameTypes != null ? nameTypes.get(ModelUtil.getQName(schemaNamespaceUri, schemaTypeName)) : typesByName.get(qName);
+  }
+
   /**
    * Registers a {@link ModelElementType} in this {@link Model}.
    *
@@ -101,8 +123,27 @@ public class ModelImpl implements Model {
    */
   public void registerType(ModelElementType modelElementType, Class<? extends ModelElementInstance> instanceType) {
     QName qName = ModelUtil.getQName(modelElementType.getTypeNamespace(), modelElementType.getTypeName());
+
     typesByName.put(qName, modelElementType);
     typesByClass.put(instanceType, modelElementType);
+
+    if (modelElementType.getSchemaTypeName() != null
+            && modelElementType.getSchemaTypeNamespace() != null) {
+
+      QName schemaTypeQName = ModelUtil
+              .getQName(modelElementType.getSchemaTypeNamespace(), modelElementType.getSchemaTypeName());
+
+      Map<QName, ModelElementType> schemaTypes = typesByNameAndScheme.get(qName);
+
+      if (schemaTypes == null) {
+
+        schemaTypes = new HashMap<QName, ModelElementType>();
+
+        typesByNameAndScheme.put(qName, schemaTypes);
+      }
+
+      schemaTypes.put(schemaTypeQName, modelElementType);
+    }
   }
 
   public String getModelName() {
