@@ -83,6 +83,10 @@ public final class ModelUtil {
     return new QName(namespaceUri, localName);
   }
 
+  public static QName getQName(String namespaceUri, String localName, String schemaNamespaceUri, String schemaTypeName) {
+    return new QName(namespaceUri, localName, schemaNamespaceUri, schemaTypeName);
+  }
+
   public static void ensureInstanceOf(Object instance, Class<?> type) {
     if(!type.isAssignableFrom(instance.getClass())) {
       throw new ModelException("Object is not instance of type "+type.getName());
