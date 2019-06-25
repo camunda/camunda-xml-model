@@ -42,6 +42,19 @@ public class ParserTest {
   }
 
   @Test
+  public void shouldNotOverrideExternalSchemaAccess() {
+    System.setProperty("javax.xml.accessExternalSchema", "");
+    try {
+      TestModelParser modelParser = new TestModelParser();
+      String testXml = "org/camunda/bpm/model/xml/impl/parser/ExternalSchemaAccess.xml";
+      InputStream testXmlAsStream = this.getClass().getClassLoader().getResourceAsStream(testXml);
+      modelParser.parseModelFromStream(testXmlAsStream);
+    } finally {
+      System.clearProperty("javax.xml.accessExternalSchema");
+    }
+  }
+
+  @Test
   public void shouldThrowExceptionForDoctype() {
     TestModelParser modelParser = new TestModelParser();
     String testXml = "org/camunda/bpm/model/xml/impl/parser/XxeProcessing.xml";
